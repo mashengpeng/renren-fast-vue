@@ -1,6 +1,6 @@
 <template>
     <el-tree :data="menus" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node="false"
-        show-checkbox node-key="catId">
+        show-checkbox node-key="catId" :default-expanded-keys="defaultExpandKey">
         <span class="custom-tree-node" slot-scope="{ node, data }">
             <span>{{ node.label }}</span>
             <span>
@@ -20,6 +20,7 @@ export default {
     data() {
         return {
             menus: [],
+            defaultExpandKey: [],
             defaultProps: {
                 children: "children",
                 label: "name",
@@ -43,8 +44,31 @@ export default {
         },
 
         remove(node, data) {
-            console.log(node, data)
-        },
+            var ids = [data.catId]
+
+            this.$confirm(`确定删除【${data.name}】菜单?`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$http({
+                    url: this.$http.adornUrl("/product/category/delete"),
+                    method: 'post',
+                    data: this.$http.adornData(ids, false)
+                }).then(({ data }) => {
+                    this.$message({
+                        message: '删除成功', 
+                        type: 'success'
+                    });
+                    this.defaultExpandKey = [node.parent.data.catId]
+                    this.getMenus()
+                });
+            }).catch(() => {
+
+            })
+
+
+        }
     },
     created() {
         this.getMenus();
