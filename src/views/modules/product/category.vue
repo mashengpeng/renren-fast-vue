@@ -1,7 +1,9 @@
 <template>
     <div>
+        <el-button type="danger" @click="batchDelete">批量删除</el-button>
         <el-tree :data="menus" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node="false"
-            show-checkbox node-key="catId" :default-expanded-keys="defaultExpandKey">
+            show-checkbox node-key="catId" :default-expanded-keys="defaultExpandKey" :draggable="true"
+            :allow-drop="allowDrop" ref="menuTree">
             <span class="custom-tree-node" slot-scope="{ node, data }">
                 <span>{{ node.label }}</span>
                 <span>
@@ -17,6 +19,7 @@
                     </el-button>
                 </span>
             </span>
+
         </el-tree>
         <el-dialog :title="title" :visible.sync="dialogVisible" width="30%" :close-on-click-modal="false">
             <el-form :model="category">
@@ -45,6 +48,7 @@
 export default {
     data() {
         return {
+            maxLevel: 0,
             dialogType: "",
             menus: [],
             title: "",
@@ -67,8 +71,57 @@ export default {
         }
     },
     methods: {
+        batchDelete() {
+            let catIds = []
+            let checkedNodes = this.$refs.menuTree.getCheckedNodes()
+            for (let i = 0; i < checkedNodes.length; i++) {
+                catIds.push(checkedNodes[i].catId)
+            }
+            this.$confirm(`确定删除【${catIds}】菜单?`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$http({
+                    url: this.$http.adornUrl('/product/category/delete'),
+                    method: 'post',
+                    data: this.$http.adornData(catIds, false)
+                }).then(({ data }) => {
+                    this.$message({
+                        message: "菜单删除成功",
+                        type: "success"
 
+                    })
+                    this.getMenus()
+                }).catch(() => {
+
+                });
+            })
+
+
+        },
         handleNodeClick(data) {
+            console.log(data)
+        },
+        allowDrop(draggingNode, dropNode, type) {
+            this.maxLevel = 0
+            this.countNodeLevel(draggingNode.data)
+            let deep = this.maxLevel - draggingNode.data.catLevel + 1
+            if (type == "inner") {
+                return (deep + dropNode.level) <= 3
+            } else {
+                return (deep + dropNode.parent.level) <= 3
+            }
+        },
+        countNodeLevel(node) {
+            if (node.children != null && node.children.length > 0) {
+                for (let i = 0; i < node.children.length; i++) {
+                    if (node.children[i].catLevel > this.maxLevel) {
+                        this.maxLevel = node.children[i].catLevel
+                    }
+                    this.countNodeLevel(node.children[i])
+                }
+            }
         },
         getMenus() {
             this.$http({
