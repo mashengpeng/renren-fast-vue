@@ -115,6 +115,7 @@ export default {
   props: {},
   data() {
     return {
+      catelogId:0,
       dataForm: {
         key: ''
       },
@@ -133,12 +134,16 @@ export default {
   methods: {
     treeNodeClick(data, node, component){
       console.log(data, node, component)
+      if(node.level == 3){
+        this.catelogId = data.catId
+        this.getDataList()
+      }
     },
     // 获取数据列表
     getDataList() {
       this.dataListLoading = true
       this.$http({
-        url: this.$http.adornUrl('/product/attrgroup/list'),
+        url: this.$http.adornUrl(`/product/attrgroup/list/${this.catelogId}`),
         method: 'get',
         params: this.$http.adornParams({
           'page': this.pageIndex,
