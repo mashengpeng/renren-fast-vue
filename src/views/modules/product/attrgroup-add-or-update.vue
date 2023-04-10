@@ -1,10 +1,6 @@
 <template>
-  <el-dialog
-    :close-on-click-modal="false"
-    :title="!dataForm.attrGroupId ? '新增' : '修改'"
-    :visible.sync="visible">
-    <el-form ref="dataForm" :model="dataForm" :rules="dataRule" label-width="80px"
-             @keyup.enter.native="dataFormSubmit()">
+  <el-dialog :close-on-click-modal="false" :title="!dataForm.attrGroupId ? '新增' : '修改'" :visible.sync="visible" @closed = "dialogClose()">
+    <el-form ref="dataForm" :model="dataForm" :rules="dataRule" label-width="80px" @keyup.enter.native="dataFormSubmit()">
       <el-form-item label="组名" prop="attrGroupName">
         <el-input v-model="dataForm.attrGroupName" placeholder="组名"></el-input>
       </el-form-item>
@@ -18,7 +14,7 @@
         <el-input v-model="dataForm.icon" placeholder="组图标"></el-input>
       </el-form-item>
       <el-form-item label="所属分类id" prop="catelogId">
-        <el-input v-model="dataForm.catelogId" placeholder="所属分类id"></el-input>
+        <el-cascader v-model="dataForm.catelogPath" :options="categorys" :props="props" filterable placeholder="试试搜索：手机"></el-cascader>
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
@@ -33,34 +29,44 @@ export default {
   data() {
     return {
       visible: false,
+      categorys: [],
+      props: {
+        value:"catId",
+        label:"name",
+        children:"children"
+      },
       dataForm: {
         attrGroupId: 0,
         attrGroupName: '',
         sort: '',
         descript: '',
         icon: '',
-        catelogId: ''
+        catelogPath: [], 
+        catelogId: 0
       },
       dataRule: {
         attrGroupName: [
-          {required: true, message: '组名不能为空', trigger: 'blur'}
+          { required: true, message: '组名不能为空', trigger: 'blur' }
         ],
         sort: [
-          {required: true, message: '排序不能为空', trigger: 'blur'}
+          { required: true, message: '排序不能为空', trigger: 'blur' }
         ],
         descript: [
-          {required: true, message: '描述不能为空', trigger: 'blur'}
+          { required: true, message: '描述不能为空', trigger: 'blur' }
         ],
         icon: [
-          {required: true, message: '组图标不能为空', trigger: 'blur'}
+          { required: true, message: '组图标不能为空', trigger: 'blur' }
         ],
         catelogId: [
-          {required: true, message: '所属分类id不能为空', trigger: 'blur'}
+          { required: true, message: '所属分类id不能为空', trigger: 'blur' }
         ]
       }
     }
   },
   methods: {
+    dialogClose(){
+      this.dataForm.catelogPath = []
+    },
     init(id) {
       this.dataForm.attrGroupId = id || 0
       this.visible = true
@@ -71,13 +77,14 @@ export default {
             url: this.$http.adornUrl(`/product/attrgroup/info/${this.dataForm.attrGroupId}`),
             method: 'get',
             params: this.$http.adornParams()
-          }).then(({data}) => {
+          }).then(({ data }) => {
             if (data && data.code === 0) {
               this.dataForm.attrGroupName = data.attrGroup.attrGroupName
               this.dataForm.sort = data.attrGroup.sort
               this.dataForm.descript = data.attrGroup.descript
               this.dataForm.icon = data.attrGroup.icon
               this.dataForm.catelogId = data.attrGroup.catelogId
+              this.dataForm.catelogPath = data.attrGroup.catelogPath
             }
           })
         }
@@ -96,9 +103,9 @@ export default {
               'sort': this.dataForm.sort,
               'descript': this.dataForm.descript,
               'icon': this.dataForm.icon,
-              'catelogId': this.dataForm.catelogId
+              'catelogId': this.dataForm.catelogPath[this.dataForm.catelogPath.length - 1]
             })
-          }).then(({data}) => {
+          }).then(({ data }) => {
             if (data && data.code === 0) {
               this.$message({
                 message: '操作成功',
@@ -115,7 +122,19 @@ export default {
           })
         }
       })
-    }
+    },
+    getCategorys() {
+      this.$http({
+        url: this.$http.adornUrl('/product/category/list/tree'),
+        method: 'get',
+        params: this.$http.adornParams({})
+      }).then(({data}) => {
+        this.categorys = data.data
+      })
+    },
+  },
+  created(){
+    this.getCategorys()
   }
 }
 </script>
