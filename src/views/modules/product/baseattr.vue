@@ -161,7 +161,25 @@ export default {
     },
     getAllDataList(){
       this.catId = 0;
-      this.getDataList();
+      this.dataListLoading = true;
+      let type = this.attrtype == 0 ? "sale" : "base";
+      this.$http({
+        url: this.$http.adornUrl(`/product/attr/${type}/list/${this.catId}`),
+        method: "get",
+        params: this.$http.adornParams({
+          page: this.pageIndex,
+          limit: this.pageSize,
+        })
+      }).then(({ data }) => {
+        if (data && data.code === 0) {
+          this.dataList = data.page.list;
+          this.totalPage = data.page.totalCount;
+        } else {
+          this.dataList = [];
+          this.totalPage = 0;
+        }
+        this.dataListLoading = false;
+      });
     },
     // 获取数据列表
     getDataList() {
@@ -247,5 +265,5 @@ export default {
   }
 };
 </script>
-<style scoped>
+<style scoped>
 </style>
