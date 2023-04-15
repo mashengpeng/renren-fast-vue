@@ -363,18 +363,18 @@ export default {
       //spu_name  spu_description  catalog_id  brand_id  weight  publish_status
       spu: {
         //要提交的数据
-        spuName: "",
-        spuDescription: "",
-        catalogId: 0,
+        spuName: "测试商品",
+        spuDescription: "测试商品",
+        catalogId: 225,
         brandId: "",
-        weight: "",
+        weight: "10",
         publishStatus: 0,
         decript: [], //商品详情
         images: [], //商品图集，最后sku也可以新增
         bounds: {
           //积分
-          buyBounds: 0,
-          growBounds: 0
+          buyBounds: 100,
+          growBounds: 100
         },
         baseAttrs: [], //基本属性
         skus: [] //所有sku信息
@@ -393,15 +393,15 @@ export default {
           { required: true, message: "请选择一个品牌", trigger: "blur" }
         ],
         decript: [
-          { required: true, message: "请上传商品详情图集", trigger: "blur" }
+          { required: false, message: "请上传商品详情图集", trigger: "blur" }
         ],
         images: [
-          { required: true, message: "请上传商品图片集", trigger: "blur" }
+          { required: false, message: "请上传商品图片集", trigger: "blur" }
         ],
         weight: [
           {
             type: "number",
-            required: true,
+            required: false,
             message: "请填写正确的重量值",
             trigger: "blur"
           }
@@ -458,13 +458,13 @@ export default {
         brandId: "",
         weight: "",
         publishStatus: 0,
-        decript: [], 
-        images: [], 
+        decript: [],
+        images: [],
         bounds: {
           buyBounds: 0,
           growBounds: 0
         },
-        baseAttrs: [], 
+        baseAttrs: [],
         skus: []
       };
     },
